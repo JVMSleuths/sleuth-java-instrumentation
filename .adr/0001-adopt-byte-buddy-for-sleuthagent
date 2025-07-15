@@ -1,0 +1,27 @@
+ADR 0001: Adopt Byte Buddy for SleuthAgent Instrumentation
+
+Context
+
+We need a Java agent (SleuthAgent) that:
+
+Records every class loaded by the JVM.
+
+Tracks which classes actually execute code.
+
+Initially, this simple goal can be met using the plain Java Instrumentation API. However, we have future aspirations (see below) that require more expressive and maintainable bytecode manipulation.
+
+Decision
+
+We will use Byte Buddy to implement the SleuthAgent.
+
+Consequences
+
+Positive: Accelerated development; easier maintenance; ability to evolve instrumentation rules dynamically; robust error handling.
+
+Negative: Increased binary size; transitive dependency on Byte Buddy.
+
+Future Aspirations Enabled by Byte Buddy
+
+We plan to extend the agent with:
+
+Identify unused methods.
