@@ -6,12 +6,22 @@
  * This project uses @Incubating APIs which are subject to change.
  */
 
+pluginManagement {
+    // Include the plugin project for the plugin DSL
+    includeBuild("class-extractor-gradle-plugin")
+
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
 plugins {
     // Apply the foojay-resolver plugin to allow automatic download of JDKs
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
 rootProject.name = "sleuth-java-instrumentation"
-include("agent")
-include("test-app")
-include("smoke-test")
+include("agent", "test-app", "smoke-test")
+
+
