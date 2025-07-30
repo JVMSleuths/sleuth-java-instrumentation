@@ -45,7 +45,6 @@ class ClassExtractorPlugin : Plugin<Project> {
             group = "jvmsleuths"
             description = "Create myfile.txt in the current directory"
 
-            // Configure inputs and outputs during configuration time
             runtimeClasspath.from(project.configurations.getByName("runtimeClasspath"))
 
             compiledClasses.from(
@@ -55,7 +54,6 @@ class ClassExtractorPlugin : Plugin<Project> {
 
             outputFile.set(project.layout.buildDirectory.file("reports/classpath-report.txt"))
 
-            // Ensure this task runs after compilation
             dependsOn("compileJava")
         }
     }
