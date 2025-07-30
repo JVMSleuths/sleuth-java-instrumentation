@@ -1,47 +1,62 @@
 package dev.jvmsleuths
 
+import io.github.classgraph.ClassGraph
 import org.gradle.api.DefaultTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.tasks.*
-import java.io.File
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 
 abstract class ExportClassesToCsvTask : DefaultTask() {
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val classDirs: ConfigurableFileCollection
 
-    @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
+    @get:Classpath
+    abstract val runtimeClasspath: ConfigurableFileCollection
+
+    @get:Classpath
+    abstract val compiledClasses: ConfigurableFileCollection
+
+    @get:OutputFile
+    abstract val outputFile: RegularFileProperty
 
     @TaskAction
     fun run() {
-        val outDir = outputDir.get().asFile.also { it.mkdirs() }
-        val csv = File(outDir, "all_classes.csv")
-        csv.writeText("class\n")
 
-        classDirs.files
-            .forEach { dir ->
-                dir.walkTopDown()
-                    .filter { it.isFile && it.extension == "class" }
-                    .map { file -> file.relativeTo(dir).invariantSeparatorsPath.removeSuffix(".class").replace('/', '.') }
-                    .distinct()
-                    .sorted()
-                    .forEach { name -> csv.appendText("$name\n") }
-            }
+        val allClasspathFiles = runtimeClasspath.files + compiledClasses.files
 
-        println("✔ Exported ${'$'}{csv.readLines().size - 1} classes to ${'$'}{csv.path}")
+        val scanResult = ClassGraph()
+            .overrideClasspath(allClasspathFiles)
+            .enableClassInfo()
+            .scan()
+
+        val classNames = scanResult.allClasses.map { it.name }.sorted()
+
+        val reportFile = outputFile.asFile.get()
+        reportFile.parentFile.mkdirs()
+        reportFile.writeText(classNames.joinToString("\n"))
     }
 }
 
-
 class ClassExtractorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.tasks.register("createFileTaskFromBinaryPlugin", ExportClassesToCsvTask::class.java) {
+        project.tasks.register("generateClassReport", ExportClassesToCsvTask::class.java) {
             group = "from my binary plugin"
             description = "Create myfile.txt in the current directory"
+
+            // Configure inputs and outputs during configuration time
+            runtimeClasspath.from(project.configurations.getByName("runtimeClasspath"))
+
+            compiledClasses.from(
+                project.layout.buildDirectory.dir("classes/java/main"),
+                project.layout.buildDirectory.dir("classes/kotlin/main")
+            )
+
+            outputFile.set(project.layout.buildDirectory.file("reports/classpath-report.txt"))
+
+            // Ensure this task runs after compilation
+            dependsOn("compileJava")
         }
     }
 }
