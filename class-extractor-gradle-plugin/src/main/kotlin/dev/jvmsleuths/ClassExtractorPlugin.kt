@@ -43,7 +43,7 @@ class ClassExtractorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.tasks.register("generateClassReport", ExportClassesTask::class.java) {
             group = "jvmsleuths"
-            description = "Create myfile.txt in the current directory"
+            description = "Generates class report"
 
             runtimeClasspath.from(project.configurations.getByName("runtimeClasspath"))
 
