@@ -10,7 +10,7 @@ import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 
-abstract class ExportClassesToCsvTask : DefaultTask() {
+abstract class ExportClassesTask : DefaultTask() {
 
     @get:Classpath
     abstract val runtimeClasspath: ConfigurableFileCollection
@@ -41,8 +41,8 @@ abstract class ExportClassesToCsvTask : DefaultTask() {
 
 class ClassExtractorPlugin : Plugin<Project> {
     override fun apply(project: Project) {
-        project.tasks.register("generateClassReport", ExportClassesToCsvTask::class.java) {
-            group = "from my binary plugin"
+        project.tasks.register("generateClassReport", ExportClassesTask::class.java) {
+            group = "jvmsleuths"
             description = "Create myfile.txt in the current directory"
 
             // Configure inputs and outputs during configuration time
