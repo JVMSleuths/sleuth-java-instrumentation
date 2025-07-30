@@ -16,6 +16,9 @@ repositories {
 
 dependencies {
     implementation("io.github.classgraph:classgraph:4.8.158")
+    testImplementation(gradleTestKit())
+    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
 }
 
 gradlePlugin {
@@ -25,6 +28,10 @@ gradlePlugin {
             implementationClass = "dev.jvmsleuths.ClassExtractorPlugin"
         }
     }
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Optional: Enable publishing to local repository for testing
